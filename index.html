@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10182f">
+<title>Mes Résultats</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#080d1c;
+  color:#f5f5f5;
+}
+.hidden{display:none!important}
+header{
+  padding:22px 18px;
+  background:linear-gradient(135deg,#101b38,#14244b);
+  text-align:center;
+}
+.logo{font-size:42px}
+h1{margin:8px 0 4px}
+.sub{color:#aeb8d0}
+.container{
+  max-width:850px;
+  margin:auto;
+  padding:18px;
+}
+.card{
+  background:#121b36;
+  border:1px solid #34405e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+button{
+  border:0;
+  border-radius:13px;
+  padding:13px 18px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.primary{background:#08b86b;color:white}
+.danger{background:#ed3f60;color:white}
+.secondary{background:#273452;color:white}
+input,select{
+  width:100%;
+  padding:15px;
+  margin:7px 0 13px;
+  border-radius:13px;
+  border:1px solid #35415f;
+  background:#0d1429;
+  color:white;
+  font-size:16px;
+  outline:none;
+}
+label{
+  display:block;
+  margin-top:9px;
+  color:#cbd2e3;
+}
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+@media(max-width:600px){
+  .row{grid-template-columns:1fr}
+}
+.tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:18px;
+}
+.tab.active{
+  background:#08b86b;
+  color:white;
+}
+.search{
+  margin-bottom:10px;
+}
+.event{
+  background:#111a34;
+  border:1px solid #394662;
+  border-left:5px solid #08b86b;
+  border-radius:18px;
+  padding:18px;
+  margin-top:15px;
+}
+.event h3{
+  margin-top:0;
+}
+.line{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  padding:10px 0;
+  border-bottom:1px solid #303b56;
+}
+.value{
+  color:#16c875;
+  font-weight:bold;
+}
+.score{
+  color:#ff4565;
+  font-size:20px;
+  font-weight:bold;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+.actions button{flex:1}
+.small{
+  color:#9da8c0;
+  font-size:13px;
+}
+.center{text-align:center}
+.error{color:#ff5b70;margin:10px 0}
+.success{color:#13ca7b;margin:10px 0}
+#app{min-height:100vh}
+</style>
+</head>
+
+<body>
+
+<!-- CONNEXION / INSCRIPTION -->
+<section id="auth">
+
+<header>
+  <div class="logo">📊</div>
+  <h1>Mes Résultats</h1>
+  <div class="sub">Application privée et locale</div>
+</header>
+
+<div class="container">
+
+<div class="card" id="setupBox">
+  <h2>🔐 Première utilisation</h2>
+  <p class="small">
+    Crée ton identifiant et ton mot de passe. Ils seront conservés
+    uniquement sur cet appareil.
+  </p>
+
+  <label>Nom d'utilisateur</label>
+  <input id="newUser" placeholder="Ex : Daniel">
+
+  <label>Mot de passe</label>
+  <input id="newPass" type="password" placeholder="Choisis ton mot de passe">
+
+  <label>Confirmation</label>
+  <input id="newPass2" type="password" placeholder="Confirme le mot de passe">
+
+  <button class="primary" onclick="createAccount()">Créer mon accès</button>
+  <div id="setupMsg"></div>
+</div>
+
+<div class="card hidden" id="loginBox">
+  <h2>🔒 Accès privé</h2>
+
+  <label>Nom d'utilisateur</label>
+  <input id="loginUser" placeholder="Ton identifiant">
+
+  <label>Mot de passe</label>
+  <input id="loginPass" type="password" placeholder="Ton mot de passe">
+
+  <button class="primary" onclick="login()">Ouvrir l'application</button>
+
+  <div id="loginMsg"></div>
+
+  <br>
+  <button class="secondary" onclick="logoutSetup()">
+    Réinitialiser l'accès
+  </button>
+</div>
+
+</div>
+</section>
+
+
+<!-- APPLICATION -->
+<section id="app" class="hidden">
+
+<header>
+  <div class="logo">📊</div>
+  <h1>Mes Résultats</h1>
+  <div class="sub">Gestion locale des événements</div>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+  <div class="tabs">
+    <button id="tab1" class="tab active" onclick="showResult(1)">
+      📊 Résultat 1
+    </button>
+
+    <button id="tab2" class="tab secondary" onclick="showResult(2)">
+      📊 Résultat 2
+    </button>
+  </div>
+
+  <button class="primary" style="width:100%" onclick="openForm()">
+    ＋ Nouvel événement
+  </button>
+
+</div>
+
+
+<!-- RECHERCHES -->
+
+<div class="card">
+
+<h3>🔎 Rechercher une condition</h3>
+
+<label>Recherche Handicap</label>
+<input class="search" id="searchHandicap"
+       placeholder="Ex : 1.85, 2.10..."
+       oninput="render()">
+
+<label>Recherche V + 1,5</label>
+<input class="search" id="searchV15"
+       placeholder="Ex : 1.50, 2.00..."
+       oninput="render()">
+
+<button class="secondary" onclick="clearSearch()">
+Effacer les recherches
+</button>
+
+</div>
+
+
+<!-- FORMULAIRE -->
+
+<div class="card hidden" id="formBox">
+
+<h2 id="formTitle">➕ Nouvel événement</h2>
+
+<input type="hidden" id="editId">
+
+<label>Événement</label>
+<select id="resultType">
+<option value="1">Résultat 1</option>
+<option value="2">Résultat 2</option>
+</select>
+
+
+<h3>⚖️ Handicap</h3>
+
+<div class="row">
+<div>
+<label>Handicap 1</label>
+<input id="handicap1" type="number" step="0.01"
+placeholder="Ex : 1.85">
+</div>
+
+<div>
+<label>Handicap 2</label>
+<input id="handicap2" type="number" step="0.01"
+placeholder="Ex : 2.10">
+</div>
+</div>
+
+<label>Score handicap</label>
+<input id="handicapScore" placeholder="Ex : 0-1">
+
+
+<h3>⚽ Victoire + Total</h3>
+
+<div class="row">
+<div>
+<label>V1 + Total 1,5</label>
+<input id="v15" type="number" step="0.01"
+placeholder="Cote">
+</div>
+
+<div>
+<label>V1 + Total 2,5</label>
+<input id="v25" type="number" step="0.01"
+placeholder="Cote">
+</div>
+</div>
+
+<div class="row">
+<div>
+<label>X1 + Total 1,5</label>
+<input id="x15" type="number" step="0.01"
+placeholder="Cote">
+</div>
+
+<div>
+<label>X1 + Total 2,5</label>
+<input id="x25" type="number" step="0.01"
+placeholder="Cote">
+</div>
+</div>
+
+
+<h3>👥 Rencontre</h3>
+
+<div class="row">
+
+<div>
+<label>Équipe 1</label>
+<input id="team1" placeholder="Ex : Real Madrid">
+</div>
+
+<div>
+<label>Cote équipe 1</label>
+<input id="teamOdd1" type="number" step="0.01"
+placeholder="Ex : 1.85">
+</div>
+
+</div>
+
+<div class="row">
+
+<div>
+<label>Équipe 2</label>
+<input id="team2" placeholder="Ex : Barcelone">
+</div>
+
+<div>
+<label>Cote équipe 2</label>
+<input id="teamOdd2" type="number" step="0.01"
+placeholder="Ex : 2.10">
+</div>
+
+</div>
+
+
+<h3>🏁 Résultat final</h3>
+
+<label>Score final</label>
+<input id="finalScore" placeholder="Ex : 2-1">
+
+
+<div class="row">
+
+<div>
+<label>Nombre de corners</label>
+<input id="corners" type="number" min="0"
+placeholder="Ex : 8">
+</div>
+
+<div>
+<label>Nombre de fautes</label>
+<input id="fouls" type="number" min="0"
+placeholder="Ex : 14">
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button class="primary" onclick="saveEvent()">
+💾 Enregistrer
+</button>
+
+<button class="secondary" onclick="closeForm()">
+Annuler
+</button>
+
+</div>
+
+</div>
+
+
+<!-- LISTE -->
+
+<div id="events"></div>
+
+<br>
+
+<div class="center">
+<button class="danger" onclick="lockApp()">
+🔒 Verrouiller l'application
+</button>
+</div>
+
+</div>
+</section>
+
+
+<script>
+
+let events = JSON.parse(localStorage.getItem("events") || "[]");
+let currentResult = 1;
+
+
+/* =========================
+   AUTHENTIFICATION
+========================= */
+
+async function hash(text){
+  const data = new TextEncoder().encode(text);
+  const buffer = await crypto.subtle.digest("SHA-256",data);
+  return Array.from(new Uint8Array(buffer))
+    .map(x=>x.toString(16).padStart(2,"0"))
+    .join("");
+}
+
+function initAuth(){
+
+  if(localStorage.getItem("account")){
+    document.getElementById("setupBox").classList.add("hidden");
+    document.getElementById("loginBox").classList.remove("hidden");
+  }else{
+    document.getElementById("setupBox").classList.remove("hidden");
+    document.getElementById("loginBox").classList.add("hidden");
+  }
+
+}
+
+async function createAccount(){
+
+  const user=document.getElementById("newUser").value.trim();
+  const pass=document.getElementById("newPass").value;
+  const pass2=document.getElementById("newPass2").value;
+  const msg=document.getElementById("setupMsg");
+
+  if(!user || !pass){
+    msg.className="error";
+    msg.textContent="Remplis tous les champs.";
+    return;
+  }
+
+  if(pass!==pass2){
+    msg.className="error";
+    msg.textContent="Les mots de passe ne correspondent pas.";
+    return;
+  }
+
+  if(pass.length<4){
+    msg.className="error";
+    msg.textContent="Utilise au moins 4 caractères.";
+    return;
+  }
+
+  const passwordHash=await hash(pass);
+
+  localStorage.setItem("account",
+    JSON.stringify({
+      user:user,
+      password:passwordHash
+    })
+  );
+
+  msg.className="success";
+  msg.textContent="Compte créé. Tu peux maintenant te connecter.";
+
+  setTimeout(initAuth,700);
+}
+
+
+async function login(){
+
+  const user=document.getElementById("loginUser").value.trim();
+  const pass=document.getElementById("loginPass").value;
+  const msg=document.getElementById("loginMsg");
+
+  const account=JSON.parse(localStorage.getItem("account") || "null");
+
+  if(!account){
+    initAuth();
+    return;
+  }
+
+  const passwordHash=await hash(pass);
+
+  if(user===account.user && passwordHash===account.password){
+
+    sessionStorage.setItem("logged","1");
+
+    document.getElementById("auth").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+
+    render();
+
+  }else{
+
+    msg.className="error";
+    msg.textContent="Identifiant ou mot de passe incorrect.";
+
+  }
+}
+
+
+function lockApp(){
+
+  sessionStorage.removeItem("logged");
+
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("auth").classList.remove("hidden");
+
+  document.getElementById("loginPass").value="";
+  document.getElementById("loginMsg").textContent="";
+
+  initAuth();
+}
+
+
+function logoutSetup(){
+
+  if(confirm("Réinitialiser le compte local ? Toutes les données d'accès seront supprimées.")){
+    localStorage.removeItem("account");
+    initAuth();
+  }
+
+}
+
+
+/* =========================
+   ONGLETS
+========================= */
+
+function showResult(number){
+
+  currentResult=number;
+
+  document.getElementById("tab1").className =
+    number===1 ? "tab active" : "tab secondary";
+
+  document.getElementById("tab2").className =
+    number===2 ? "tab active" : "tab secondary";
+
+  render();
+
+}
+
+
+/* =========================
+   FORMULAIRE
+========================= */
+
+function openForm(id=null){
+
+  document.getElementById("formBox").classList.remove("hidden");
+
+  if(id){
+
+    const e=events.find(x=>x.id===id);
+    if(!e)return;
+
+    document.getElementById("formTitle").textContent="✏️ Modifier l'événement";
+
+    document.getElementById("editId").value=e.id;
+    document.getElementById("resultType").value=e.result;
+
+    document.getElementById("handicap1").value=e.handicap1;
+    document.getElementById("handicap2").value=e.handicap2;
+    document.getElementById("handicapScore").value=e.handicapScore;
+
+    document.getElementById("v15").value=e.v15;
+    document.getElementById("v25").value=e.v25;
+    document.getElementById("x15").value=e.x15;
+    document.getElementById("x25").value=e.x25;
+
+    document.getElementById("team1").value=e.team1;
+    document.getElementById("team2").value=e.team2;
+
+    document.getElementById("teamOdd1").value=e.teamOdd1;
+    document.getElementById("teamOdd2").value=e.teamOdd2;
+
+    document.getElementById("finalScore").value=e.finalScore;
+
+    document.getElementById("corners").value=e.corners;
+    document.getElementById("fouls").value=e.fouls;
+
+  }else{
+
+    document.getElementById("formTitle").textContent="➕ Nouvel événement";
+
+    document.getElementById("editId").value="";
+    document.getElementById("resultType").value=currentResult;
+
+    document.querySelectorAll("#formBox input").forEach(i=>{
+      if(i.type!=="hidden")i.value="";
+    });
+
+  }
+
+  window.scrollTo({
+    top:document.getElementById("formBox").offsetTop-10,
+    behavior:"smooth"
+  });
+
+}
+
+
+function closeForm(){
+  document.getElementById("formBox").classList.add("hidden");
+}
+
+
+/* =========================
+   ENREGISTRER
+========================= */
+
+function saveEvent(){
+
+  const data={
+
+    id:document.getElementById("editId").value ||
+       Date.now().toString(),
+
+    result:Number(document.getElementById("resultType").value),
+
+    handicap1:document.getElementById("handicap1").value,
+    handicap2:document.getElementById("handicap2").value,
+    handicapScore:document.getElementById("handicapScore").value,
+
+    v15:document.getElementById("v15").value,
+    v25:document.getElementById("v25").value,
+    x15:document.getElementById("x15").value,
+    x25:document.getElementById("x25").value,
+
+    team1:document.getElementById("team1").value,
+    team2:document.getElementById("team2").value,
+
+    teamOdd1:document.getElementById("teamOdd1").value,
+    teamOdd2:document.getElementById("teamOdd2").value,
+
+    finalScore:document.getElementById("finalScore").value,
+
+    corners:document.getElementById("corners").value,
+    fouls:document.getElementById("fouls").value
+
+  };
+
+
+  if(!data.team1 || !data.team2){
+
+    alert("Entre les deux équipes.");
+    return;
+
+  }
+
+  const old=events.findIndex(x=>x.id===data.id);
+
+  if(old>=0){
+    events[old]=data;
+  }else{
+    events.unshift(data);
+  }
+
+  localStorage.setItem("events",JSON.stringify(events));
+
+  currentResult=data.result;
+
+  closeForm();
+  render();
+
+}
+
+
+/* =========================
+   SUPPRIMER
+========================= */
+
+function deleteEvent(id){
+
+  if(!confirm("Supprimer cet événement ?"))return;
+
+  events=events.filter(x=>x.id!==id);
+
+  localStorage.setItem("events",JSON.stringify(events));
+
+  render();
+
+}
+
+
+/* =========================
+   AFFICHAGE
+========================= */
+
+function render(){
+
+  const box=document.getElementById("events");
+
+  if(!box)return;
+
+  const h=(document.getElementById("searchHandicap")?.value || "")
+    .toLowerCase().trim();
+
+  const v=(document.getElementById("searchV15")?.value || "")
+    .toLowerCase().trim();
+
+
+  let list=events.filter(e=>Number(e.result)===currentResult);
+
+
+  if(h){
+    list=list.filter(e=>
+      String(e.handicap1).toLowerCase().includes(h) ||
+      String(e.handicap2).toLowerCase().includes(h)
+    );
+  }
+
+
+  if(v){
+    list=list.filter(e=>
+      String(e.v15).toLowerCase().includes(v)
+    );
+  }
+
+
+  if(!list.length){
+
+    box.innerHTML=`
+      <div class="card center">
+        <h2>📭 Aucun événement</h2>
+        <p class="small">
+          Aucun événement enregistré dans Résultat ${currentResult}.
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML=list.map(e=>`
+
+    <div class="event">
+
+      <h3>
+        🏟️ ${escapeHTML(e.team1)}
+        —
+        ${escapeHTML(e.team2)}
+      </h3>
+
+
+      <div class="line">
+        <span>Handicap 1</span>
+        <span class="value">${escapeHTML(e.handicap1 || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>Handicap 2</span>
+        <span class="value">${escapeHTML(e.handicap2 || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>Score handicap</span>
+        <span class="score">${escapeHTML(e.handicapScore || "-")}</span>
+      </div>
+
+
+      <div class="line">
+        <span>V1 + Total 1,5</span>
+        <span class="value">${escapeHTML(e.v15 || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>V1 + Total 2,5</span>
+        <span class="value">${escapeHTML(e.v25 || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>X1 + Total 1,5</span>
+        <span class="value">${escapeHTML(e.x15 || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>X1 + Total 2,5</span>
+        <span class="value">${escapeHTML(e.x25 || "-")}</span>
+      </div>
+
+
+      <h3>👥 Rencontre</h3>
+
+      <div class="line">
+        <span>${escapeHTML(e.team1)}</span>
+        <span class="value">${escapeHTML(e.teamOdd1 || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>${escapeHTML(e.team2)}</span>
+        <span class="value">${escapeHTML(e.teamOdd2 || "-")}</span>
+      </div>
+
+
+      <div class="line">
+        <span>Score final</span>
+        <span class="score">${escapeHTML(e.finalScore || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>Nombre de corners</span>
+        <span>${escapeHTML(e.corners || "-")}</span>
+      </div>
+
+      <div class="line">
+        <span>Nombre de fautes</span>
+        <span>${escapeHTML(e.fouls || "-")}</span>
+      </div>
+
+
+      <div class="actions">
+
+        <button class="secondary"
+          onclick="openForm('${e.id}')">
+          ✏️ Modifier
+        </button>
+
+        <button class="danger"
+          onclick="deleteEvent('${e.id}')">
+          🗑️ Supprimer
+        </button>
+
+      </div>
+
+    </div>
+
+  `).join("");
+
+}
+
+
+function clearSearch(){
+
+  document.getElementById("searchHandicap").value="";
+  document.getElementById("searchV15").value="";
+
+  render();
+
+}
+
+
+function escapeHTML(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================
+   DÉMARRAGE
+========================= */
+
+initAuth();
+
+if(sessionStorage.getItem("logged")==="1"){
+
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+
+  render();
+
+}
+
+</script>
+
+</body>
+</html>
